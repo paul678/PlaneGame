@@ -12,6 +12,7 @@
 #include "CGameApp.h"
 
 extern HINSTANCE g_hInst;
+float eps, eps2;
 
 //-----------------------------------------------------------------------------
 // CGameApp Member Functions
@@ -332,6 +333,8 @@ bool CGameApp::BuildObjects()
 
 	if(!m_imgBackground.LoadBitmapFromFile("data/background.bmp", GetDC(m_hWnd)))
 		return false;
+	if(!m_imgBackground2.LoadBitmapFromFile("data/background.bmp", GetDC(m_hWnd)))
+		return false;
 
 	// Success!
 	return true;
@@ -594,6 +597,8 @@ void CGameApp::ProcessInput( )
 //-----------------------------------------------------------------------------
 void CGameApp::AnimateObjects()
 {
+	eps += 4.5;
+	eps2 += 4.5;
 	m_pPlayer->Update(m_Timer.GetTimeElapsed());
 	m_pPlayer1->Update(m_Timer.GetTimeElapsed());
 	m_pPlayer2->Update(m_Timer.GetTimeElapsed());
@@ -710,9 +715,39 @@ void CGameApp::colision(CPlayer* obj, CPlayer* obj2)
 //-----------------------------------------------------------------------------
 void CGameApp::DrawObjects()
 {
+	HMONITOR hmon = MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO mi = { sizeof(mi) };
+	GetMonitorInfo(hmon, &mi);
+	int				y			= mi.rcMonitor.bottom;
+
 	m_pBBuffer->reset();
 
-	m_imgBackground.Paint(m_pBBuffer->getDC(), 0, 0);
+	if(m_pPlayer->Position().y<=500)
+	{
+		m_pPlayer->Velocity().y=0;
+		m_imgBackground.Paint(m_pBBuffer->getDC(), 0, eps);
+		m_imgBackground2.Paint(m_pBBuffer->getDC(), 0, eps2);
+	}
+	else 
+	{
+		if(m_pPlayer->Position().y >= y-80)
+		{
+			m_pPlayer->Velocity().y=0;
+			m_imgBackground2.Paint(m_pBBuffer->getDC(), 0, -eps);
+			m_imgBackground.Paint(m_pBBuffer->getDC(), 0, -eps2);
+		}
+		else
+		{
+		eps=0;
+		eps2=-2250;
+		m_imgBackground.Paint(m_pBBuffer->getDC(), 0, 0);
+		}
+	}
+	if(eps2 == 0)
+		{
+			eps=0;
+			eps2=-2250;
+		}
 
 	m_pPlayer->Draw();
 

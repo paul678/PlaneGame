@@ -90,6 +90,7 @@ private:
 	HINSTANCE				m_hInstance;
 
 	CImageFile				m_imgBackground;
+	CImageFile				m_imgBackground2;
 
 	BackBuffer*				m_pBBuffer;
 	CPlayer*				m_pPlayer;
