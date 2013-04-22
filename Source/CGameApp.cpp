@@ -35,8 +35,17 @@ CGameApp::CGameApp()
 	m_pPlayer4		= NULL;
 	m_pPlayer5		= NULL;
 	m_pPlayer6		= NULL;
+	m_pPlayer7		= NULL;
 	
 	missile			= NULL;
+	missile1		= NULL;
+	missile2		= NULL;
+	missile3		= NULL;
+	missile4		= NULL;
+	missile5		= NULL;
+	missile6		= NULL;
+	missile7		= NULL;
+
 	bullet			= NULL;
 
 	m_LastFrameRate = 0;
@@ -221,8 +230,19 @@ LRESULT CGameApp::DisplayWndProc( HWND hWnd, UINT Message, WPARAM wParam, LPARAM
 	// Determine message type
 	switch (Message)
 	{
-		case WM_CREATE:
+	case WM_CREATE:
+		{
+			/*HMENU hMenuBar = CreateMenu();
+			HMENU hFile = CreateMenu();
+			HMENU hOptions = CreateMenu();
+
+			AppendMenu(hMenuBar, MF_POPUP,NULL,"Pause");
+			AppendMenu(hMenuBar, MF_POPUP,NULL,"Save");
+			AppendMenu(hMenuBar, MF_POPUP,NULL,"Exit");
+
+			SetMenu(hWnd,hMenuBar);*/
 			break;
+		}
 		
 		case WM_CLOSE:
 			PostQuitMessage(0);
@@ -253,16 +273,16 @@ LRESULT CGameApp::DisplayWndProc( HWND hWnd, UINT Message, WPARAM wParam, LPARAM
 
 			break;
 
-		case WM_LBUTTONDOWN:
-			// Capture the mouse
-			SetCapture( m_hWnd );
-			GetCursorPos( &m_OldCursorPos );
-			break;
+		//case WM_LBUTTONDOWN:
+		//	// Capture the mouse
+		//	SetCapture( m_hWnd );
+		//	GetCursorPos( &m_OldCursorPos );
+		//	break;
 
-		case WM_LBUTTONUP:
-			// Release the mouse
-			ReleaseCapture( );
-			break;
+		//case WM_LBUTTONUP:
+		//	// Release the mouse
+		//	ReleaseCapture( );
+		//	break;
 
 		case WM_KEYDOWN:
 			switch(wParam)
@@ -274,11 +294,12 @@ LRESULT CGameApp::DisplayWndProc( HWND hWnd, UINT Message, WPARAM wParam, LPARAM
 				fTimer = SetTimer(m_hWnd, 1, 250, NULL);
 				m_pPlayer->Explode();
 				break;
-			case VK_CONTROL:
+			/*case VK_CONTROL:
 				fTimer= SetTimer(m_hWnd, 1, 250, NULL);
 				m_pPlayer1->Explode();
-				break;
+				break; */
 			}
+			
 			break;
 
 		case WM_TIMER:
@@ -287,8 +308,8 @@ LRESULT CGameApp::DisplayWndProc( HWND hWnd, UINT Message, WPARAM wParam, LPARAM
 			case 1:
 				if(!m_pPlayer->AdvanceExplosion())
 					KillTimer(m_hWnd, 1);
-				if(!m_pPlayer1->AdvanceExplosion())
-					KillTimer(m_hWnd, 1);
+				/*if(!m_pPlayer1->AdvanceExplosion())
+					KillTimer(m_hWnd, 1); */
 				break;
 			}
 
@@ -331,13 +352,30 @@ bool CGameApp::BuildObjects()
 
 	bullet = new CPlayer(m_pBBuffer,CPlayer::image3);
 
-	if(!m_imgBackground.LoadBitmapFromFile("data/background.bmp", GetDC(m_hWnd)))
+    menu_background.LoadBitmapFromFile("data/menu-background.bmp", GetDC(m_hWnd));
+    button_play = new Sprite("data/Play.bmp",RGB(0xff, 0xff, 0xff));
+    button_play->setBackBuffer(m_pBBuffer);
+    button_playH = new Sprite("data/Play-High.bmp", RGB(0xff, 0xff, 0xff));
+    button_playH->setBackBuffer(m_pBBuffer);
+    button_settings = new Sprite("data/Settings.bmp", RGB(0xff, 0xff, 0xff));
+    button_settings->setBackBuffer(m_pBBuffer);
+    button_settingsH = new Sprite("data/Settings-High.bmp", RGB(0xff, 0xff, 0xff));
+    button_settingsH->setBackBuffer(m_pBBuffer);
+    button_exit = new Sprite("data/Exit.bmp", RGB(0xff, 0xff, 0xff));
+    button_exit->setBackBuffer(m_pBBuffer);
+    button_exitH = new Sprite("data/Exit-High.bmp", RGB(0xff, 0xff, 0xff));
+    button_exitH->setBackBuffer(m_pBBuffer);
+
+	if(!m_imgBackground.LoadBitmapFromFile("data/star.bmp", GetDC(m_hWnd)))
 		return false;
-	if(!m_imgBackground2.LoadBitmapFromFile("data/background.bmp", GetDC(m_hWnd)))
+	
+	if(!m_imgBackground2.LoadBitmapFromFile("data/star.bmp", GetDC(m_hWnd)))
 		return false;
 
 	// Success!
 	return true;
+
+
 }
 
 //-----------------------------------------------------------------------------
@@ -346,7 +384,7 @@ bool CGameApp::BuildObjects()
 //-----------------------------------------------------------------------------
 void CGameApp::SetupGameState()
 {
-	m_pPlayer->Position() = Vec2(700, 650);
+	m_pPlayer->Position() = Vec2(650, 650);
 	m_pPlayer1->Position() = Vec2(100, 100);
 	m_pPlayer2->Position() = Vec2(300, 100);
 	m_pPlayer3->Position() = Vec2(500, 100);
@@ -463,6 +501,9 @@ void CGameApp::FrameAdvance()
 
 	// Animate the game objects
 	AnimateObjects();
+	//colisionPixel(CPlayer* obj, CPlayer* obj2);
+	
+	//scrollBackground();
 
 	// Drawing the game objects
 	DrawObjects();
@@ -499,9 +540,11 @@ void CGameApp::ProcessInput( )
 	// Move the player
 	Vec2 pos;
 	Vec2 pos2;
-	pos2 = bullet->Position();
+	
 	pos = m_pPlayer->Position();
+	pos2 = bullet->Position();
 
+	
 	if(pos2.y <= 0 && bullet->Velocity().y != 0)
 	{
 		bullet->stop();
@@ -597,8 +640,9 @@ void CGameApp::ProcessInput( )
 //-----------------------------------------------------------------------------
 void CGameApp::AnimateObjects()
 {
-	eps += 4.5;
-	eps2 += 4.5;
+	eps += 3.5;
+	eps2 += 3.5;
+
 	m_pPlayer->Update(m_Timer.GetTimeElapsed());
 	m_pPlayer1->Update(m_Timer.GetTimeElapsed());
 	m_pPlayer2->Update(m_Timer.GetTimeElapsed());
@@ -618,7 +662,8 @@ void CGameApp::AnimateObjects()
 	missile7->Update(m_Timer.GetTimeElapsed());
 
 	bullet->Update(m_Timer.GetTimeElapsed());
-	
+
+	//coliziunea avioanelor de sus cu avionul de jos
 	colision(m_pPlayer1,m_pPlayer);
 	colision(m_pPlayer2,m_pPlayer);
 	colision(m_pPlayer3,m_pPlayer);
@@ -626,7 +671,8 @@ void CGameApp::AnimateObjects()
 	colision(m_pPlayer5,m_pPlayer);
 	colision(m_pPlayer6,m_pPlayer);
 	colision(m_pPlayer7,m_pPlayer);
-
+	
+	//coliziunea rachetelor cu avionul de jos
 	colision(missile1,m_pPlayer);
 	colision(missile2,m_pPlayer);
 	colision(missile3,m_pPlayer);
@@ -635,6 +681,7 @@ void CGameApp::AnimateObjects()
 	colision(missile6,m_pPlayer);
 	colision(missile7,m_pPlayer);
 
+	//coliziunea glontului cu avioanele de sus
 	colision(bullet, m_pPlayer1);
 	colision(bullet, m_pPlayer2);
 	colision(bullet, m_pPlayer3);
@@ -642,10 +689,13 @@ void CGameApp::AnimateObjects()
 	colision(bullet, m_pPlayer5);
 	colision(bullet, m_pPlayer6);
 	colision(bullet, m_pPlayer7);
+	
 }
 
 void CGameApp::AI()
 {
+	
+   //seteaza velocity la toate avioanele de sus 
 	m_pPlayer1->Velocity() = Vec2(0,25);
 	m_pPlayer2->Velocity() = Vec2(0,25);
 	m_pPlayer3->Velocity() = Vec2(0,25);
@@ -662,6 +712,7 @@ void CGameApp::AI()
 	m_pPlayer6->Draw();
 	m_pPlayer7->Draw();
 	
+   
 	missile1->Draw();
 	attack(m_pPlayer1, missile1, -100);
 
@@ -684,10 +735,13 @@ void CGameApp::AI()
 	attack(m_pPlayer7, missile7, -100);
 }
 
+
 void CGameApp::attack(CPlayer* m_pPlayer, CPlayer* obj, int val)
 {
+	
 	Vec2 pos;
 	pos = m_pPlayer->Position();
+	//verificarea vitezei cu zero pentru a putea seta pozitia 
 	if(obj->Velocity().y == 0)
 		obj->Position() = Vec2(pos.x, pos.y);
 
@@ -695,7 +749,7 @@ void CGameApp::attack(CPlayer* m_pPlayer, CPlayer* obj, int val)
 }
 
 void CGameApp::colision(CPlayer* obj, CPlayer* obj2)
-{
+{   
 	Vec2 pos1;
 	Vec2 pos2;
 	pos1 = obj2->Position();
@@ -705,10 +759,46 @@ void CGameApp::colision(CPlayer* obj, CPlayer* obj2)
 		obj2->Explode();
 		obj2->AdvanceExplosion();
 		obj2->stop();
-		obj2->Position() = Vec2(5000, 5000);
+		obj2->Position() = Vec2(80, 5000);
 	}
+
 }
 
+//--------------------------
+// Name: DrawMenu ()
+// Desc : Draw a pause menu
+//---------------------------
+void CGameApp::DrawMenu()
+{
+        POINT cursorPos;
+        GetCursorPos(&cursorPos);
+        int x_m = (int) cursorPos.x;
+        int y_m = (int) cursorPos.y;
+
+        button_play->mPosition = Vec2(650, 250);
+        button_play->draw();
+        if(x_m >=441 && x_m <= 859 && y_m >= 220 && y_m <= 320)
+        {
+            button_playH->mPosition = Vec2(650, 250);
+            button_playH->draw();
+        }
+        button_settings->mPosition = Vec2(650, 350);
+        button_settings->draw();
+        if(x_m >=441 && x_m <= 859 && y_m >= 320 && y_m <= 420)
+        {
+            button_settingsH->mPosition = Vec2(650, 350);
+            button_settingsH->draw();
+        }
+        button_exit->mPosition = Vec2(650, 450);
+        button_exit->draw();
+        if(x_m >=441 && x_m <= 859 && y_m >= 420 && y_m <= 520)
+        {
+            button_exitH->mPosition = Vec2(650, 450);
+            button_exitH->draw();
+            if(GetKeyState(VK_LBUTTON) & 0xF0 )
+                PostQuitMessage(0);
+        }
+}
 //-----------------------------------------------------------------------------
 // Name : DrawObjects () (Private)
 // Desc : Draws the game objects
@@ -719,39 +809,46 @@ void CGameApp::DrawObjects()
 	MONITORINFO mi = { sizeof(mi) };
 	GetMonitorInfo(hmon, &mi);
 	int				y			= mi.rcMonitor.bottom;
+	int				x			= mi.rcMonitor.right;
 
 	m_pBBuffer->reset();
 
-	if(m_pPlayer->Position().y<=500)
+	if(m_pPlayer->Position().x >= x-50)
 	{
-		m_pPlayer->Velocity().y=0;
-		m_imgBackground.Paint(m_pBBuffer->getDC(), 0, eps);
-		m_imgBackground2.Paint(m_pBBuffer->getDC(), 0, eps2);
+		m_pPlayer->Velocity().x=0;
+		m_imgBackground.Paint(m_pBBuffer->getDC(), -eps, 0);
+		m_imgBackground2.Paint(m_pBBuffer->getDC(), -eps2,0);
 	}
 	else 
 	{
-		if(m_pPlayer->Position().y >= y-80)
+		if(m_pPlayer->Position().x <= 70)
 		{
-			m_pPlayer->Velocity().y=0;
-			m_imgBackground2.Paint(m_pBBuffer->getDC(), 0, -eps);
-			m_imgBackground.Paint(m_pBBuffer->getDC(), 0, -eps2);
+			m_pPlayer->Velocity().x=0;
+			m_imgBackground2.Paint(m_pBBuffer->getDC(), eps,0);
+			m_imgBackground.Paint(m_pBBuffer->getDC(), eps2, 0);
 		}
 		else
 		{
-		eps=0;
-		eps2=-2250;
+		eps=-4000;
+		eps2=0;
 		m_imgBackground.Paint(m_pBBuffer->getDC(), 0, 0);
 		}
 	}
-	if(eps2 == 0)
+	if(eps == 0)
 		{
-			eps=0;
-			eps2=-2250;
+			eps=-4000;
+			eps2=0;
 		}
 
-	m_pPlayer->Draw();
+    if(GetKeyState(0x50))
+    {
+        //m_bActive = false;
+        DrawMenu();
+    }
 
-	AI();
+	m_pPlayer->Draw();
+	
+	//AI();
 
 	if(GetKeyState( VK_NUMPAD0 ))
 	{

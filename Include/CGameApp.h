@@ -59,6 +59,7 @@ private:
 	void		SetupGameState	( );
 	void		AnimateObjects	( );
 	void		DrawObjects	   ( );
+	void		DrawMenu()		();
 	void		ProcessInput	  ( );
 	void		attack			(CPlayer* m_pPlayer, CPlayer* obj, int val);
 	void		AI				();
